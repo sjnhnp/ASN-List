@@ -1,30 +1,10 @@
+
 # ASN-List
 
-实时更新的 ASN 和 IP 数据库。
-country 目录ASN如下：
-
-- ASN-CN China
-
-## 特征
-
-- 每日自动更新
-- 可靠且准确的来源
-
-## 在代理应用中使用
-
-## mihomo规则
-
-<pre><code class="language-javascript">
-rules:
-  - RULE-SET,ASNCN,Proxy
-
-</code></pre>
-
-## 常规配置
+实时更新 CN 的 ASN 和 IP 数据库。
 
 <pre><code class="language-javascript">
 rule-providers:
-
   CNasn:
     type: http
     behavior: classical
@@ -32,29 +12,20 @@ rule-providers:
     path: ./ruleset/CN_ASN.yaml
     interval: 86400
     format: yaml
-
 </code></pre>
-
-## 高级配置ASN
 
 <pre><code class="language-javascript">
 rule-providers:
-
   CNasn:
     <<: *classical
     url: "https://jsd.onmicrosoft.cn/gh/Kwisma/ASN-List@main/country/CN/CN_ASN.yaml"
     path: ./ruleset/CN_ASN.yaml
-
 </code></pre>
-
-## 高级配置CIDR
 
 <pre><code class="language-javascript">
 rule-providers:
-
   CNcidr:
     <<: *ipcidr
     url: "https://jsd.onmicrosoft.cn/gh/Kwisma/ASN-List@main/country/CN/CN_IP.yaml"
     path: ./ruleset/CN_IP.yaml
-
 </code></pre>
