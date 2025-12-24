@@ -26,7 +26,7 @@ const findFiles = (dir) => {
 
     if (stat && stat.isDirectory()) {
       results = [...results, ...findFiles(fullPath)]; // 递归查找子目录
-    } else if (file.endsWith('_IP.yaml') || file.endsWith('_IP.json')) {
+    } else if (file.endsWith('_IP.yaml') || file.endsWith('_IP.json') || file.endsWith('_ASN.yaml')) {
       results.push(fullPath);
     }
   });
@@ -34,23 +34,7 @@ const findFiles = (dir) => {
   return results;
 };
 
-// 执行命令的封装，支持重试机制
-const executeCommand = async (cmd, retries = 0) => {
-  return new Promise((resolve, reject) => {
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        console.log(`命令失败，正在重试... (第 ${retries + 1} 次)`);
-        if (retries < maxRetries) {
-          setTimeout(() => resolve(executeCommand(cmd, retries + 1)), retryInterval);
-        } else {
-          reject(new Error(`命令执行失败: ${cmd}`));
-        }
-      } else {
-        resolve(stdout);
-      }
-    });
-  });
-};
+// ... (omitted)
 
 // 处理文件
 const processFiles = async () => {
@@ -62,6 +46,9 @@ const processFiles = async () => {
     if (srcFile.endsWith('_IP.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
       command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
+    } else if (srcFile.endsWith('_ASN.yaml')) {
+      targetFile = srcFile.replace('.yaml', '.mrs');
+      command = `mihomo convert-ruleset ipasn yaml "${srcFile}" "${targetFile}"`;
     } else {
       continue; // 忽略不符合条件的文件
     }
