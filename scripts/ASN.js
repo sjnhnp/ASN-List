@@ -6,6 +6,22 @@ import winston from "winston";
 import yaml from "js-yaml";
 import readline from "readline";
 
+
+const HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Cache-Control": "max-age=0",
+  "Sec-Ch-Ua": '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+  "Sec-Ch-Ua-Mobile": "?0",
+  "Sec-Ch-Ua-Platform": '"Windows"',
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Upgrade-Insecure-Requests": "1"
+};
+
 const csvFiles = [
   "./GeoLite2-ASN-Blocks-IPv4.csv",
   "./GeoLite2-ASN-Blocks-IPv6.csv",
@@ -186,7 +202,7 @@ async function saveLatestASN(name, directory = "country") {
   initFile(name, directory);
   try {
     logger.info(`开始请求 ASN 数据 (${name} in ${directory})...`);
-    const { data } = await fetchWithRetry(url, {});
+    const { data } = await fetchWithRetry(url, { headers: HEADERS });
     const $ = cheerio.load(data);
     const asns =
       directory === "data" ? $("table.w100p tbody tr") : $("#asns tbody tr");
@@ -240,9 +256,7 @@ async function saveLatestASN(name, directory = "country") {
           );
           //logger.info(`已写入 ASN (${asnNumber})`);
           if (scanning) {
-            //const cidrList = asnToCIDR[asnNumber];
-            //const cidrList = await fetchPrefixes(asnNumber);
-            const cidrList = await readFileContentAsync(asnNumber);
+            const cidrList = await fetchPrefixes(asnNumber);
             if (cidrList && cidrList.length > 0) {
               cidrList.forEach((cidr) => {
                 fs.appendFileSync(files.cidrList, `${cidr}\n`, "utf8");
@@ -297,9 +311,7 @@ async function saveLatestASN(name, directory = "country") {
           );
 
           if (scanningCountry) {
-            //const cidrList = asnToCIDR[asnNumber];
-            //const cidrList = await fetchPrefixes(asnNumber);
-            const cidrList = await readFileContentAsync(asnNumber);
+            const cidrList = await fetchPrefixes(asnNumber);
             if (cidrList && cidrList.length > 0) {
               cidrList.forEach((cidr) => {
                 fs.appendFileSync(files.cidrList, `${cidr}\n`, "utf8");
@@ -322,7 +334,7 @@ async function saveLatestASN(name, directory = "country") {
 async function fetchPrefixes(asnNumber) {
   try {
     const Url = `https://bgp.he.net/AS${asnNumber}`;
-    const Response = await axios.get(Url, {});
+    const Response = await axios.get(Url, { headers: HEADERS });
     return extractCIDR(Response.data);
   } catch (error) {
     logger.error('获取数据时发生错误:', error);
