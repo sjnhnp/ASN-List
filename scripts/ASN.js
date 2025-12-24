@@ -247,12 +247,12 @@ async function saveLatestASN(name, directory = "country") {
           );
           fs.appendFileSync(
             files.asnYaml,
-            `  - IP-ASN,${asnNumber}\n`,
+            `  - IP-ASN, ${asnNumber}\n`,
             "utf8",
           );
           fs.appendFileSync(
             files.asnResolveYaml,
-            `  - IP-ASN,${asnNumber},no-resolve\n`,
+            `  - IP-ASN, ${asnNumber}, no-resolve\n`,
             "utf8",
           );
           //logger.info(`已写入 ASN (${asnNumber})`);
@@ -302,12 +302,12 @@ async function saveLatestASN(name, directory = "country") {
           );
           fs.appendFileSync(
             files.asnYaml,
-            `  - IP-ASN,${asnNumber}\n`,
+            `  - IP-ASN, ${asnNumber}\n`,
             "utf8",
           );
           fs.appendFileSync(
             files.asnResolveYaml,
-            `  - IP-ASN,${asnNumber},no-resolve\n`,
+            `  - IP-ASN, ${asnNumber}, no-resolve\n`,
             "utf8",
           );
 
