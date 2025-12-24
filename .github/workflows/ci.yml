@@ -37,7 +37,9 @@ jobs:
 
       - name: Update GeoLite2 ASN Blocks
         run: |
-          wget -O GeoLite2-ASN-Blocks-IPv4.csv 'https://raw.githubusercontent.com/seketiti/GeoLiet2/release/GeoLite2-ASN-Blocks-IPv4.csv'
+          DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/seketiti/GeoLiet2/releases/latest" | jq -r '.assets[] | select(.name=="GeoLite2-ASN-Blocks-IPv4.csv") | .browser_download_url')
+          echo "Downloading from: $DOWNLOAD_URL"
+          wget -O GeoLite2-ASN-Blocks-IPv4.csv "$DOWNLOAD_URL"
 
           
       - name: Update ASN and IP List country
