@@ -38,7 +38,7 @@ jobs:
       - name: Update GeoLite2 ASN Blocks
         run: |
           wget -O GeoLite2-ASN-Blocks-IPv4.csv 'https://raw.githubusercontent.com/seketiti/GeoLiet2/release/GeoLite2-ASN-Blocks-IPv4.csv'
-          wget -O GeoLite2-ASN-Blocks-IPv6.csv 'https://raw.githubusercontent.com/seketiti/GeoLiet2/release/GeoLite2-ASN-Blocks-IPv6.csv'
+
           
       - name: Update ASN and IP List country
         run: node scripts/ASN.js

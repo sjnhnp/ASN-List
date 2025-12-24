@@ -354,16 +354,6 @@ function extractCIDR(html) {
       //logger.info(`第 ${index + 1} 行没有找到 CIDR。`);
     }
   });
-  $('#table_prefixes6 tbody tr').each((index, row) => {
-    //获取每一行中的第一个 `<a>` 标签的文本，即 CIDR 地址
-    const prefix = $(row).find('td:first-child a').text().trim();
-    if (prefix) {
-      //logger.info(`找到 CIDR: ${prefix}`);
-      cidrs.push(prefix);
-    } else {
-      //logger.info(`第 ${index + 1} 行没有找到 CIDR。`);
-    }
-  });
   return cidrs;
 }
 
