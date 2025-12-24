@@ -45,10 +45,7 @@ jobs:
       - name: Update ASN and IP List country
         run: node scripts/ASN.js
 
-      - name: Update data and mihomo IP List country
-        run: node scripts/mihomo.js
-        env:
-          base_dir: data
+
 
       - name: Update country and mihomo IP List country
         run: node scripts/mihomo.js

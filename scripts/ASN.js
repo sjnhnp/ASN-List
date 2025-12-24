@@ -84,7 +84,8 @@ async function parseCSV(filePath) {
       continue; // 跳过表头
     }
     const [network, asnRaw] = line.split(",");
-    const asn = parseInt(asnRaw);
+    if (!network || !asnRaw) continue; // 简单校验
+    const asn = parseInt(asnRaw.replace(/"/g, ""));
     if (!isNaN(asn)) {
       const cidr = network.replace(/"/g, "");
       if (!asnMap.has(asn)) {
