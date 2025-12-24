@@ -64,7 +64,7 @@ const processFiles = async () => {
       command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
     } else if (srcFile.endsWith('_ASN.yaml') || srcFile.endsWith('_ASN_No_Resolve.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
-      command = `mihomo convert-ruleset ipasn yaml "${srcFile}" "${targetFile}"`;
+      command = `mihomo convert-ruleset classical yaml "${srcFile}" "${targetFile}"`;
     } else {
       continue; // 忽略不符合条件的文件
     }
