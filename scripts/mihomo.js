@@ -26,7 +26,7 @@ const findFiles = (dir) => {
 
     if (stat && stat.isDirectory()) {
       results = [...results, ...findFiles(fullPath)]; // 递归查找子目录
-    } else if (file.endsWith('_IP.yaml') || file.endsWith('_IP.json') || file.endsWith('_ASN.yaml')) {
+    } else if (file.endsWith('_IP.yaml') || file.endsWith('_IP.json') || file.endsWith('_ASN.yaml') || file.endsWith('_ASN_No_Resolve.yaml')) {
       results.push(fullPath);
     }
   });
@@ -46,7 +46,7 @@ const processFiles = async () => {
     if (srcFile.endsWith('_IP.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
       command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
-    } else if (srcFile.endsWith('_ASN.yaml')) {
+    } else if (srcFile.endsWith('_ASN.yaml') || srcFile.endsWith('_ASN_No_Resolve.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
       command = `mihomo convert-ruleset ipasn yaml "${srcFile}" "${targetFile}"`;
     } else {

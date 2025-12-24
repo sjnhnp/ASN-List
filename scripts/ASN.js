@@ -237,22 +237,22 @@ async function saveLatestASN(name, directory = "country") {
         if (asnName === "ASN") {
           fs.appendFileSync(
             files.asnList,
-            `IP-ASN,${asnNumber},no-resolve\n`,
-            "utf8",
-          );
-          fs.appendFileSync(
-            files.asnResolveList,
             `IP-ASN,${asnNumber}\n`,
             "utf8",
           );
           fs.appendFileSync(
+            files.asnResolveList,
+            `IP-ASN,${asnNumber},no-resolve\n`,
+            "utf8",
+          );
+          fs.appendFileSync(
             files.asnYaml,
-            `  - IP-ASN,${asnNumber},no-resolve\n`,
+            `  - IP-ASN,${asnNumber}\n`,
             "utf8",
           );
           fs.appendFileSync(
             files.asnResolveYaml,
-            `  - IP-ASN,${asnNumber}\n`,
+            `  - IP-ASN,${asnNumber},no-resolve\n`,
             "utf8",
           );
           //logger.info(`已写入 ASN (${asnNumber})`);
@@ -292,22 +292,22 @@ async function saveLatestASN(name, directory = "country") {
         if (asnNumber) {
           fs.appendFileSync(
             files.asnList,
-            `IP-ASN,${asnNumber},no-resolve\n`,
-            "utf8",
-          );
-          fs.appendFileSync(
-            files.asnResolveList,
             `IP-ASN,${asnNumber}\n`,
             "utf8",
           );
           fs.appendFileSync(
+            files.asnResolveList,
+            `IP-ASN,${asnNumber},no-resolve\n`,
+            "utf8",
+          );
+          fs.appendFileSync(
             files.asnYaml,
-            `  - IP-ASN,${asnNumber},no-resolve\n`,
+            `  - IP-ASN,${asnNumber}\n`,
             "utf8",
           );
           fs.appendFileSync(
             files.asnResolveYaml,
-            `  - IP-ASN,${asnNumber}\n`,
+            `  - IP-ASN,${asnNumber},no-resolve\n`,
             "utf8",
           );
 
