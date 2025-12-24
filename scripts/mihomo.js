@@ -34,9 +34,25 @@ const findFiles = (dir) => {
   return results;
 };
 
-// ... (omitted)
-
-// 处理文件
+// 执行命令的封装，支持重试机制
+const executeCommand = async (cmd, retries = 0) => {
+  return new Promise((resolve, reject) => {
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`命令执行失败: ${cmd}`);
+        console.error(`Stderr: ${stderr}`);
+        console.log(`正在重试... (第 ${retries + 1} 次)`);
+        if (retries < maxRetries) {
+          setTimeout(() => resolve(executeCommand(cmd, retries + 1)), retryInterval);
+        } else {
+          reject(new Error(`命令执行失败: ${cmd}, Stderr: ${stderr}`));
+        }
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+};
 const processFiles = async () => {
   const files = findFiles(baseDir);
 
@@ -58,6 +74,10 @@ const processFiles = async () => {
       console.log(`转换成功: ${srcFile} -> ${targetFile}`);
     } catch (error) {
       console.log(`转换失败: ${srcFile} -> ${targetFile}，已达到最大重试次数`);
+      console.error(`Error message: ${error.message}`);
+      if (error.stderr) {
+        console.error(`Stderr: ${error.stderr}`);
+      }
     }
   }
 };
