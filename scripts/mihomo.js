@@ -62,9 +62,6 @@ const processFiles = async () => {
     if (srcFile.endsWith('_IP.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
       command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
-    } else if (srcFile.endsWith('_IP.json')) {
-      targetFile = srcFile.replace('.json', '.srs');
-      command = `sing-box rule-set compile --output "${targetFile}" "${srcFile}"`;
     } else {
       continue; // 忽略不符合条件的文件
     }
