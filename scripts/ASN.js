@@ -24,7 +24,6 @@ const HEADERS = {
 
 const csvFiles = [
   "./GeoLite2-ASN-Blocks-IPv4.csv",
-  "./GeoLite2-ASN-Blocks-IPv6.csv",
 ];
 
 const config = yaml.load(fs.readFileSync("./config/config.yaml", "utf8"));
@@ -34,6 +33,7 @@ const cdn = config.cdn;
 const scanning = true;
 const scanningCountry = true;
 const asnMap = new Map();
+let asnToCIDR = {};
 // country 目录
 const nameASN = [];
 const ruleput = [];
@@ -256,7 +256,7 @@ async function saveLatestASN(name, directory = "country") {
           );
           //logger.info(`已写入 ASN (${asnNumber})`);
           if (scanning) {
-            const cidrList = await fetchPrefixes(asnNumber);
+            const cidrList = asnToCIDR[asnNumber];
             if (cidrList && cidrList.length > 0) {
               cidrList.forEach((cidr) => {
                 fs.appendFileSync(files.cidrList, `${cidr}\n`, "utf8");
@@ -311,7 +311,7 @@ async function saveLatestASN(name, directory = "country") {
           );
 
           if (scanningCountry) {
-            const cidrList = await fetchPrefixes(asnNumber);
+            const cidrList = asnToCIDR[asnNumber];
             if (cidrList && cidrList.length > 0) {
               cidrList.forEach((cidr) => {
                 fs.appendFileSync(files.cidrList, `${cidr}\n`, "utf8");
@@ -368,6 +368,10 @@ async function readFileContentAsync(filePath) {
 }
 
 async function saveWithDelay() {
+  logger.info("正在加载 ASN 数据库 (GeoLite2 CSV)...");
+  asnToCIDR = await ASNCIDRMAP(csvFiles);
+  logger.info(`ASN 数据库加载完成，包含 ${Object.keys(asnToCIDR).length} 个 ASN`);
+
   for (let i = 0; i < namelistData.length; i++) {
     await saveLatestASN(namelistData[i], "data");
   }
