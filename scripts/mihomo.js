@@ -62,7 +62,7 @@ const processFiles = async () => {
     if (srcFile.endsWith('_IP.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
       command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
-    } else if (srcFile.endsWith('_ASN.yaml') || srcFile.endsWith('_ASN_No_Resolve.yaml')) {
+    } else if (srcFile.endsWith('_ASN.yaml')) {
       targetFile = srcFile.replace('.yaml', '.mrs');
       command = `mihomo convert-ruleset classical yaml "${srcFile}" "${targetFile}"`;
     } else {
