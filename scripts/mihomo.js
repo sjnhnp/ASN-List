@@ -3,7 +3,7 @@ import path from 'path';
 import { exec } from 'child_process';
 
 // 获取 base_dir 环境变量
-const baseDir = process.env.base_dir; // 读取环境变量
+const baseDir = process.env.base_dir;
 // 设置最大重试次数
 const maxRetries = 3;
 // 设置重试间隔（单位：毫秒）
@@ -15,7 +15,11 @@ if (!baseDir) {
   process.exit(1);
 }
 
-// 递归读取目录中的所有 *_IP.yaml 和 *_IP.json 文件
+/**
+ * 递归读取目录中的所有 *_IP.yaml 文件
+ * 注意：mihomo convert-ruleset 只支持 domain 和 ipcidr 类型，不支持 classical 类型
+ * 因此 ASN 规则（classical behavior）无法转换为 .mrs 格式
+ */
 const findFiles = (dir) => {
   let results = [];
   const files = fs.readdirSync(dir);
@@ -25,8 +29,9 @@ const findFiles = (dir) => {
     const stat = fs.statSync(fullPath);
 
     if (stat && stat.isDirectory()) {
-      results = [...results, ...findFiles(fullPath)]; // 递归查找子目录
-    } else if (file.endsWith('_IP.yaml') || file.endsWith('_IP.json') || file.endsWith('_ASN.yaml') || file.endsWith('_ASN_No_Resolve.yaml')) {
+      results = [...results, ...findFiles(fullPath)];
+    } else if (file.endsWith('_IP.yaml')) {
+      // 只处理 IP CIDR 文件，ASN 文件无法转换为 mrs 格式
       results.push(fullPath);
     }
   });
@@ -41,8 +46,8 @@ const executeCommand = async (cmd, retries = 0) => {
       if (error) {
         console.error(`命令执行失败: ${cmd}`);
         console.error(`Stderr: ${stderr}`);
-        console.log(`正在重试... (第 ${retries + 1} 次)`);
         if (retries < maxRetries) {
+          console.log(`正在重试... (第 ${retries + 1} 次)`);
           setTimeout(() => resolve(executeCommand(cmd, retries + 1)), retryInterval);
         } else {
           reject(new Error(`命令执行失败: ${cmd}, Stderr: ${stderr}`));
@@ -53,21 +58,14 @@ const executeCommand = async (cmd, retries = 0) => {
     });
   });
 };
+
 const processFiles = async () => {
   const files = findFiles(baseDir);
+  console.log(`找到 ${files.length} 个 IP CIDR 文件需要转换`);
 
   for (const srcFile of files) {
-    let command, targetFile;
-
-    if (srcFile.endsWith('_IP.yaml')) {
-      targetFile = srcFile.replace('.yaml', '.mrs');
-      command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
-    } else if (srcFile.endsWith('_ASN.yaml')) {
-      targetFile = srcFile.replace('.yaml', '.mrs');
-      command = `mihomo convert-ruleset classical yaml "${srcFile}" "${targetFile}"`;
-    } else {
-      continue; // 忽略不符合条件的文件
-    }
+    const targetFile = srcFile.replace('.yaml', '.mrs');
+    const command = `mihomo convert-ruleset ipcidr yaml "${srcFile}" "${targetFile}"`;
 
     try {
       await executeCommand(command);
@@ -75,9 +73,6 @@ const processFiles = async () => {
     } catch (error) {
       console.log(`转换失败: ${srcFile} -> ${targetFile}，已达到最大重试次数`);
       console.error(`Error message: ${error.message}`);
-      if (error.stderr) {
-        console.error(`Stderr: ${error.stderr}`);
-      }
     }
   }
 };

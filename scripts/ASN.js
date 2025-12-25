@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 import * as cheerio from "cheerio";
 import winston from "winston";
-import yaml from "js-yaml";
 import readline from "readline";
+import yaml from "js-yaml";
 
 
 const HEADERS = {
@@ -128,7 +128,6 @@ function getFilePaths(name, directory) {
     asnResolveYaml: `${base}/${name}_ASN_No_Resolve.yaml`,
     cidrList: `${base}/${name}_IP.list`,
     cidrYaml: `${base}/${name}_IP.yaml`,
-    cidrJson: `${base}/${name}_IP.json`,
     readme: `${base}/README.md`,
   };
 }
@@ -136,7 +135,7 @@ function getFilePaths(name, directory) {
 function initFile(name, directory = "country") {
   const localTime = getChinaTime();
   const header = `# ${name} 的 ASN 信息\n# 最后更新： CST ${localTime}\n`;
-  const filemd = `\n# ASN-List\n\n实时更新 ${name} 的 ASN 和 IP 数据库。\n\n<pre><code class="language-javascript">\nrule-providers:\n  ${name}asn:\n    type: http\n    behavior: classical\n    url: \"https://raw.githubusercontent.com/Kwisma/ASN-List/refs/heads/main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n    interval: 86400\n    format: yaml\n</code></pre>\n\n<pre><code class="language-javascript">\nrule-providers:\n  ${name}asn:\n    <<: *classical\n    url: \"https://${cdn}/gh/Kwisma/ASN-List@main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n</code></pre>\n\n<pre><code class="language-javascript">\nrule-providers:\n  ${name}cidr:\n    <<: *ipcidr\n    url: \"https://${cdn}/gh/Kwisma/ASN-List@main/${directory}/${name}/${name}_IP.yaml\"\n    path: ./ruleset/${name}_IP.yaml\n</code></pre>`;
+  const filemd = `\n# ASN-List\n\n实时更新 ${name} 的 ASN 和 IP 数据库。\n\n<pre><code class="language-yaml">\nrule-providers:\n  ${name}asn:\n    type: http\n    behavior: classical\n    url: "https://raw.githubusercontent.com/sjnhnp/ASN-List/refs/heads/main/${directory}/${name}/${name}_ASN.yaml"\n    path: ./ruleset/${name}_ASN.yaml\n    interval: 86400\n    format: yaml\n</code></pre>\n\n<pre><code class="language-yaml">\nrule-providers:\n  ${name}asn:\n    <<: *classical\n    url: "https://${cdn}/gh/sjnhnp/ASN-List@main/${directory}/${name}/${name}_ASN.yaml"\n    path: ./ruleset/${name}_ASN.yaml\n</code></pre>\n\n<pre><code class="language-yaml">\nrule-providers:\n  ${name}cidr:\n    <<: *ipcidr\n    url: "https://${cdn}/gh/sjnhnp/ASN-List@main/${directory}/${name}/${name}_IP.yaml"\n    path: ./ruleset/${name}_IP.yaml\n</code></pre>`;
 
   const dir = path.join("./", directory, name);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -145,30 +144,12 @@ function initFile(name, directory = "country") {
   [files.asnList, files.asnResolveList, files.asnYaml, files.asnResolveYaml, files.cidrList, files.cidrYaml].forEach(
     (file) => fs.writeFileSync(file, header, "utf8"),
   );
-  fs.writeFileSync(files.cidrJson, JSON.stringify({ version: 2, rules: [{ ip_cidr: [] }] }, null, 2), "utf8");
   fs.writeFileSync(files.readme, filemd, "utf8");
 }
 
-function addIpCidrs(ips, filePath) {
-  const rawData = fs.readFileSync(filePath, 'utf8');
-  const jsonData = JSON.parse(rawData);
-
-  if (
-    jsonData.rules &&
-    jsonData.rules.length > 0 &&
-    Array.isArray(jsonData.rules[0].ip_cidr)
-  ) {
-    jsonData.rules[0].ip_cidr.push(...ips); // 批量添加 IP
-  } else {
-    throw new Error('ip_cidr 数组不存在或 JSON 结构不正确');
-  }
-
-  fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 2), 'utf8');
-  // logger.info(`已添加 ${ips.length} 个 IP`);
-}
 
 function asnInfo(name, asnNumber, directory = "country") {
-  const fileasn = `# ASN: ${asnNumber}\n# 由 Kwisma 制作，保留所有权利。\n\n`;
+  const fileasn = `# ASN: ${asnNumber}\n# 自动生成，仅供参考\n\n`;
   const files = getFilePaths(name, directory);
   [files.asnList, files.asnResolveList, files.asnYaml, files.asnResolveYaml, files.cidrList, files.cidrYaml].forEach(
     (file) => fs.appendFileSync(file, fileasn, "utf8"),
@@ -218,13 +199,13 @@ async function saveLatestASN(name, directory = "country") {
     if (directory === "data") {
       rulesetdata.push(`  - RULE-SET,ASN${name},Proxy\n`);
       ruleputdata.push(
-        `\n  ${name}asn:\n    type: http\n    behavior: classical\n    url: \"https://raw.githubusercontent.com/Kwisma/ASN-List/refs/heads/main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n    interval: 86400\n    format: yaml\n`,
+        `\n  ${name}asn:\n    type: http\n    behavior: classical\n    url: \"https://raw.githubusercontent.com/sjnhnp/ASN-List/refs/heads/main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n    interval: 86400\n    format: yaml\n`,
       );
       rulenumsetdata.push(
-        `\n  ${name}asn:\n    <<: *classical\n    url: \"https://${cdn}/gh/Kwisma/ASN-List@main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n`,
+        `\n  ${name}asn:\n    <<: *classical\n    url: \"https://${cdn}/gh/sjnhnp/ASN-List@main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n`,
       );
       rulenumsetdatacidr.push(
-        `\n  ${name}cidr:\n    <<: *ipcidr\n    url: \"https://${cdn}/gh/Kwisma/ASN-List@main/${directory}/${name}/${name}_IP.yaml\"\n    path: ./ruleset/${name}_IP.yaml\n`,
+        `\n  ${name}cidr:\n    <<: *ipcidr\n    url: \"https://${cdn}/gh/sjnhnp/ASN-List@main/${directory}/${name}/${name}_IP.yaml\"\n    path: ./ruleset/${name}_IP.yaml\n`,
       );
       nameASNdata.push(name);
       for (let asn of asns) {
@@ -252,7 +233,7 @@ async function saveLatestASN(name, directory = "country") {
           );
           fs.appendFileSync(
             files.asnResolveYaml,
-            `  - IP-ASN, ${asnNumber}, no-resolve\n`,
+            `  - IP-ASN,${asnNumber},no-resolve\n`,
             "utf8",
           );
           //logger.info(`已写入 ASN (${asnNumber})`);
@@ -263,7 +244,6 @@ async function saveLatestASN(name, directory = "country") {
                 fs.appendFileSync(files.cidrList, `${cidr}\n`, "utf8");
                 fs.appendFileSync(files.cidrYaml, `  - ${cidr}\n`, "utf8");
               });
-              addIpCidrs(cidrList, files.cidrJson);
               //logger.info(`已写入 ${cidrList.length} 个 CIDR (${asnNumber})`);
             } else {
               logger.info(`没有 CIDR 可写入 (${asnNumber})`);
@@ -274,13 +254,13 @@ async function saveLatestASN(name, directory = "country") {
     } else {
       ruleset.push(`  - RULE-SET,ASN${name},Proxy\n`);
       ruleput.push(
-        `\n  ${name}asn:\n    type: http\n    behavior: classical\n    url: \"https://raw.githubusercontent.com/Kwisma/ASN-List/refs/heads/main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n    interval: 86400\n    format: yaml\n`,
+        `\n  ${name}asn:\n    type: http\n    behavior: classical\n    url: \"https://raw.githubusercontent.com/sjnhnp/ASN-List/refs/heads/main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n    interval: 86400\n    format: yaml\n`,
       );
       rulenumset.push(
-        `\n  ${name}asn:\n    <<: *classical\n    url: \"https://${cdn}/gh/Kwisma/ASN-List@main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n`,
+        `\n  ${name}asn:\n    <<: *classical\n    url: \"https://${cdn}/gh/sjnhnp/ASN-List@main/${directory}/${name}/${name}_ASN.yaml\"\n    path: ./ruleset/${name}_ASN.yaml\n`,
       );
       rulenumsetcidr.push(
-        `\n  ${name}cidr:\n    <<: *ipcidr\n    url: \"https://${cdn}/gh/Kwisma/ASN-List@main/${directory}/${name}/${name}_IP.yaml\"\n    path: ./ruleset/${name}_IP.yaml\n`,
+        `\n  ${name}cidr:\n    <<: *ipcidr\n    url: \"https://${cdn}/gh/sjnhnp/ASN-List@main/${directory}/${name}/${name}_IP.yaml\"\n    path: ./ruleset/${name}_IP.yaml\n`,
       );
       nameASN.push(name + " " + getFullName(name));
       for (let asn of asns) {
@@ -307,7 +287,7 @@ async function saveLatestASN(name, directory = "country") {
           );
           fs.appendFileSync(
             files.asnResolveYaml,
-            `  - IP-ASN, ${asnNumber}, no-resolve\n`,
+            `  - IP-ASN,${asnNumber},no-resolve\n`,
             "utf8",
           );
 
@@ -318,7 +298,6 @@ async function saveLatestASN(name, directory = "country") {
                 fs.appendFileSync(files.cidrList, `${cidr}\n`, "utf8");
                 fs.appendFileSync(files.cidrYaml, `  - ${cidr}\n`, "utf8");
               });
-              addIpCidrs(cidrList, files.cidrJson);
               //logger.info(`已写入 ${cidrList.length} 个 CIDR (${asnNumber})`);
             } else {
               logger.info(`没有 CIDR 可写入 (${asnNumber})`);
@@ -332,41 +311,7 @@ async function saveLatestASN(name, directory = "country") {
     logger.error(`处理失败 (${name} in ${directory}):`, error);
   }
 }
-async function fetchPrefixes(asnNumber) {
-  try {
-    const Url = `https://bgp.he.net/AS${asnNumber}`;
-    const Response = await axios.get(Url, { headers: HEADERS });
-    return extractCIDR(Response.data);
-  } catch (error) {
-    logger.error('获取数据时发生错误:', error);
-  }
-}
 
-function extractCIDR(html) {
-  const $ = cheerio.load(html);
-  const cidrs = [];
-  $('#table_prefixes4 tbody tr').each((index, row) => {
-    //获取每一行中的第一个 `<a>` 标签的文本，即 CIDR 地址
-    const prefix = $(row).find('td:first-child a').text().trim();
-    if (prefix) {
-      //logger.info(`找到 CIDR: ${prefix}`);
-      cidrs.push(prefix);
-    } else {
-      //logger.info(`第 ${index + 1} 行没有找到 CIDR。`);
-    }
-  });
-  return cidrs;
-}
-
-async function readFileContentAsync(filePath) {
-  try {
-    //拼接文件路径
-    const content = await fs.promises.readFile(`meta-rules-dat/asn/AS${filePath}.list`, { encoding: 'utf-8' });
-    return content.split('\n').map(line => line.trim()).filter(line => line !== '');;
-  } catch (error) {
-    return '';
-  }
-}
 
 async function saveWithDelay() {
   logger.info("正在加载 ASN 数据库 (GeoLite2 CSV)...");

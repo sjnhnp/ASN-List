@@ -1,1 +1,12 @@
 node_modules/
+
+# 临时文件
+*.log
+.DS_Store
+
+# GeoLite2 数据文件（由 CI 下载）
+GeoLite2-*.csv
+
+# 测试文件
+test_*.yaml
+test_*.mrs

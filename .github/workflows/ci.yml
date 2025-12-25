@@ -4,20 +4,27 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 16 * * *"
+
 permissions:
   contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Checkout meta-rules-dat
+        uses: actions/checkout@v4
         with:
           repository: MetaCubeX/meta-rules-dat
           ref: meta
           path: meta-rules-dat
-      - uses: actions/setup-node@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -30,31 +37,32 @@ jobs:
         run: |
           MIHOMO_VERSION=$(curl -s "https://api.github.com/repos/MetaCubeX/mihomo/releases/latest" | jq -r .tag_name | sed 's/^v//')
           echo "Installing mihomo v$MIHOMO_VERSION"
-          wget "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" -O mihomo.gz
+          wget -q "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz" -O mihomo.gz
           gunzip mihomo.gz
           chmod +x mihomo
           sudo mv mihomo /usr/local/bin/
+          mihomo version
 
-      - name: Update GeoLite2 ASN Blocks
+      - name: Download GeoLite2 ASN Blocks
         run: |
           DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/seketiti/GeoLiet2/releases/latest" | jq -r '.assets[] | select(.name=="GeoLite2-ASN-Blocks-IPv4.csv") | .browser_download_url')
           echo "Downloading from: $DOWNLOAD_URL"
-          wget -O GeoLite2-ASN-Blocks-IPv4.csv "$DOWNLOAD_URL"
+          wget -q -O GeoLite2-ASN-Blocks-IPv4.csv "$DOWNLOAD_URL"
+          echo "Downloaded $(wc -l < GeoLite2-ASN-Blocks-IPv4.csv) lines"
 
-          
-      - name: Update ASN and IP List country
+      - name: Generate ASN and IP List
         run: node scripts/ASN.js
 
-
-
-      - name: Update country and mihomo IP List country
+      - name: Convert IP YAML to MRS format
         run: node scripts/mihomo.js
         env:
           base_dir: country
 
-      - name: Delete GeoLite2 ASN Blocks
+      - name: Cleanup temporary files
         run: rm -rf GeoLite2-ASN* meta-rules-dat
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Update IP List
+          commit_message: "chore: update ASN and IP List"
+          file_pattern: "country/**"
